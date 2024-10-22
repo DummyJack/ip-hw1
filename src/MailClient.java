@@ -18,7 +18,7 @@ public class MailClient extends Frame {
     private Button btSend = new Button("Send");
     private Button btClear = new Button("Clear");
     private Button btQuit = new Button("Quit");
-    private Label serverLabel = new Label("Local mailserver:");
+    private Label serverLabel = new Label("SMTP Server:");
     private TextField serverField = new TextField("", 40);
     private Label fromLabel = new Label("From:");
     private TextField fromField = new TextField("", 40);
@@ -34,126 +34,126 @@ public class MailClient extends Frame {
      * the relevant information (From, To, Subject, and message).
      */
     public MailClient() {
-	super("Java Mailclient");
-	
-	/* Load environment variables */
-	dotenv = Dotenv.load();
-	
-	/* Create panels for holding the fields. To make it look nice,
-	   create an extra panel for holding all the child panels. */
-	Panel serverPanel = new Panel(new BorderLayout());
-	Panel fromPanel = new Panel(new BorderLayout());
-	Panel toPanel = new Panel(new BorderLayout());
-	Panel subjectPanel = new Panel(new BorderLayout());
-	Panel messagePanel = new Panel(new BorderLayout());
-	serverPanel.add(serverLabel, BorderLayout.WEST);
-	serverPanel.add(serverField, BorderLayout.CENTER);
-	fromPanel.add(fromLabel, BorderLayout.WEST);
-	fromPanel.add(fromField, BorderLayout.CENTER);
-	String gmailAddress = dotenv.get("GMAIL");
-	if (gmailAddress != null && !gmailAddress.isEmpty()) {
-		fromField.setText(gmailAddress);
-		fromField.setEditable(false);
-	}
-	toPanel.add(toLabel, BorderLayout.WEST);
-	toPanel.add(toField, BorderLayout.CENTER);
-	subjectPanel.add(subjectLabel, BorderLayout.WEST);
-	subjectPanel.add(subjectField, BorderLayout.CENTER);
-	messagePanel.add(messageLabel, BorderLayout.NORTH);	
-	messagePanel.add(messageText, BorderLayout.CENTER);
-	Panel fieldPanel = new Panel(new GridLayout(0, 1));
-	fieldPanel.add(serverPanel);
-	fieldPanel.add(fromPanel);
-	fieldPanel.add(toPanel);
-	fieldPanel.add(subjectPanel);
+		super("Java Mailclient");
+		
+		/* Load environment variables */
+		dotenv = Dotenv.load();
+		
+		/* Create panels for holding the fields. To make it look nice,
+		create an extra panel for holding all the child panels. */
+		Panel serverPanel = new Panel(new BorderLayout());
+		Panel fromPanel = new Panel(new BorderLayout());
+		Panel toPanel = new Panel(new BorderLayout());
+		Panel subjectPanel = new Panel(new BorderLayout());
+		Panel messagePanel = new Panel(new BorderLayout());
+		serverPanel.add(serverLabel, BorderLayout.WEST);
+		serverPanel.add(serverField, BorderLayout.CENTER);
+		fromPanel.add(fromLabel, BorderLayout.WEST);
+		fromPanel.add(fromField, BorderLayout.CENTER);
+		String gmailAddress = dotenv.get("GMAIL");
+		if (gmailAddress != null && !gmailAddress.isEmpty()) {
+			fromField.setText(gmailAddress);
+			fromField.setEditable(false);
+		}
+		toPanel.add(toLabel, BorderLayout.WEST);
+		toPanel.add(toField, BorderLayout.CENTER);
+		subjectPanel.add(subjectLabel, BorderLayout.WEST);
+		subjectPanel.add(subjectField, BorderLayout.CENTER);
+		messagePanel.add(messageLabel, BorderLayout.NORTH);	
+		messagePanel.add(messageText, BorderLayout.CENTER);
+		Panel fieldPanel = new Panel(new GridLayout(0, 1));
+		fieldPanel.add(serverPanel);
+		fieldPanel.add(fromPanel);
+		fieldPanel.add(toPanel);
+		fieldPanel.add(subjectPanel);
 
-	/* Create a panel for the buttons and add listeners to the
-	   buttons. */
-	Panel buttonPanel = new Panel(new GridLayout(1, 0));
-	btSend.addActionListener(new SendListener());
-	btClear.addActionListener(new ClearListener());
-	btQuit.addActionListener(new QuitListener());
-	buttonPanel.add(btSend);
-	buttonPanel.add(btClear);
-	buttonPanel.add(btQuit);
-	
-	/* Add, pack, and show. */
-	add(fieldPanel, BorderLayout.NORTH);
-	add(messagePanel, BorderLayout.CENTER);
-	add(buttonPanel, BorderLayout.SOUTH);
-	pack();
-	// show();
-	setVisible(true);
-    }
-
-    static public void main(String argv[]) {
-	new MailClient();
-    }
-
-    /* Handler for the Send-button. */
-    class SendListener implements ActionListener {
-	public void actionPerformed(ActionEvent event) {
-	    System.out.println("Sending mail");
-	    
-	    /* Check that we have the local mailserver */
-	    if ((serverField.getText()).equals("")) {
-		showResultDialog(false, "Need name of local mailserver!");
-		return;
-	    }
-
-	    /* Check that we have the sender and recipient. */
-	    if((fromField.getText()).equals("")) {
-		showResultDialog(false, "Need sender!");
-		return;
-	    }
-	    if((toField.getText()).equals("")) {
-		showResultDialog(false, "Need recipient!");
-		return;
-	    }
-
-	    /* Create the message */
-	    Message mailMessage = new Message(fromField.getText(), 
-					      toField.getText(), 
-					      subjectField.getText(), 
-					      messageText.getText());
-
-	    /* Check that the message is valid, i.e., sender and
-	       recipient addresses look ok. */
-	    if(!mailMessage.isValid()) {
-		showResultDialog(false, "Invalid sender or recipient address!");
-		return;
-	    }
-
-	    /* Create the envelope, open the connection and try to send
-	       the message. */
-	    Envelope envelope;
-		try {
-			envelope = new Envelope(mailMessage, serverField.getText());
-		} catch (UnknownHostException e) {
-			showResultDialog(false, "Unknown host: " + e.getMessage());
-			return;
+		/* Create a panel for the buttons and add listeners to the
+		buttons. */
+		Panel buttonPanel = new Panel(new GridLayout(1, 0));
+		btSend.addActionListener(new SendListener());
+		btClear.addActionListener(new ClearListener());
+		btQuit.addActionListener(new QuitListener());
+		buttonPanel.add(btSend);
+		buttonPanel.add(btClear);
+		buttonPanel.add(btQuit);
+		
+		/* Add, pack, and show. */
+		add(fieldPanel, BorderLayout.NORTH);
+		add(messagePanel, BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.SOUTH);
+		pack();
+		// show();
+		setVisible(true);
 		}
 
-		try {
-			SMTPConnection connection = new SMTPConnection();
-			connection.send(envelope);
-			connection.close();
-			showResultDialog(true, "Mail sent successfully!");
-		} catch (IOException error) {
-			showResultDialog(false, "Sending failed: " + error.getMessage());
+		static public void main(String argv[]) {
+		new MailClient();
 		}
-	}
-    }
+
+		/* Handler for the Send-button. */
+		class SendListener implements ActionListener {
+			public void actionPerformed(ActionEvent event) {
+				System.out.println("Sending mail");
+				
+				/* Check that we have the local mailserver */
+				if ((serverField.getText()).equals("")) {
+					showResultDialog(false, "Need name of local mailserver!");
+					return;
+				}
+
+				/* Check that we have the sender and recipient. */
+				if((fromField.getText()).equals("")) {
+					showResultDialog(false, "Need sender!");
+					return;
+				}
+				if((toField.getText()).equals("")) {
+					showResultDialog(false, "Need recipient!");
+					return;
+				}
+
+				/* Create the message */
+				Message mailMessage = new Message(fromField.getText(), 
+								toField.getText(), 
+								subjectField.getText(), 
+								messageText.getText());
+
+				/* Check that the message is valid, i.e., sender and
+				recipient addresses look ok. */
+				if(!mailMessage.isValid()) {
+					showResultDialog(false, "Invalid sender or recipient address!");
+					return;
+				}
+
+				/* Create the envelope, open the connection and try to send
+				the message. */
+				Envelope envelope;
+				try {
+					envelope = new Envelope(mailMessage, serverField.getText());
+				} catch (UnknownHostException e) {
+					showResultDialog(false, "Unknown host: " + e.getMessage());
+					return;
+				}
+
+				try {
+					SMTPConnection connection = new SMTPConnection(serverField.getText());
+					connection.send(envelope);
+					connection.close();
+					showResultDialog(true, "Mail sent successfully!");
+				} catch (IOException error) {
+					showResultDialog(false, "Sending failed: " + error.getMessage());
+				}
+			}
+    	}
 
     /* Clear the fields on the GUI. */
     class ClearListener implements ActionListener {
-	public void actionPerformed(ActionEvent e) {
-	    System.out.println("Clearing fields");
-	    fromField.setText("");
-	    toField.setText("");
-	    subjectField.setText("");
-	    messageText.setText("");
-	}
+		public void actionPerformed(ActionEvent e) {
+			System.out.println("Clearing fields");
+			fromField.setText("");
+			toField.setText("");
+			subjectField.setText("");
+			messageText.setText("");
+		}
     }
 
     /* Quit. */

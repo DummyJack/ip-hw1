@@ -17,7 +17,6 @@ public class SMTPConnection implements AutoCloseable {
     // 伺服器連接相關的變數
     private static final int SMTP_PORT = 465; // SSL端口
     private static final String CRLF = "\r\n";
-    private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String Gmail = getEnvVariable("GMAIL");
     private static final String Password = getEnvVariable("PASSWORD");
 
@@ -37,8 +36,8 @@ public class SMTPConnection implements AutoCloseable {
     /*
      * 創建 SMTPConnection 對象，建立 SSL 連接並初始化用於與服務器通信的輸入輸出流
      */
-    public SMTPConnection() throws IOException {
-        System.out.println("連接 " + SMTP_HOST + ":" + SMTP_PORT);
+    public SMTPConnection(String SMTP_HOST ) throws IOException {
+        System.out.println("連接 " + SMTP_HOST  + ":" + SMTP_PORT);
         SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         connection = (SSLSocket) sslSocketFactory.createSocket(SMTP_HOST, SMTP_PORT);
         
