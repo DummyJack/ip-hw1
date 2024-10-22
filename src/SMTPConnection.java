@@ -18,7 +18,7 @@ public class SMTPConnection implements AutoCloseable {
     private static final int SMTP_PORT = 465; // SSL端口
     private static final String CRLF = "\r\n";
     private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final String Username = getEnvVariable("USERNAME");
+    private static final String Gmail = getEnvVariable("GMAIL");
     private static final String Password = getEnvVariable("PASSWORD");
 
     private final SSLSocket connection;
@@ -65,7 +65,7 @@ public class SMTPConnection implements AutoCloseable {
     private void authenticate() throws IOException {
         try {
             sendCommand("AUTH LOGIN", 334);
-            sendCommand(Base64.getEncoder().encodeToString(Username.getBytes()), 334);
+            sendCommand(Base64.getEncoder().encodeToString(Gmail.getBytes()), 334);
             sendCommand(Base64.getEncoder().encodeToString(Password.getBytes()), 235);
         } catch (IOException e) {
             throw new IOException("身份驗證失敗", e);
