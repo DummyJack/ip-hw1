@@ -4,6 +4,8 @@
 
 ## 設置
 
+_Requires Java 11 or greater_
+
 ### package
 
 ```
