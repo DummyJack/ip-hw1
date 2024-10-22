@@ -3,6 +3,7 @@ import java.net.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.JOptionPane;
+import io.github.cdimascio.dotenv.Dotenv;
 
 /* $Id: MailClient.java,v 1.7 1999/07/22 12:07:30 kangasha Exp $ */
 
@@ -12,6 +13,7 @@ import javax.swing.JOptionPane;
  * @author Jussi Kangasharju
  */
 public class MailClient extends Frame {
+    private Dotenv dotenv;
     /* The stuff for the GUI. */
     private Button btSend = new Button("Send");
     private Button btClear = new Button("Clear");
@@ -34,6 +36,9 @@ public class MailClient extends Frame {
     public MailClient() {
 	super("Java Mailclient");
 	
+	/* Load environment variables */
+	dotenv = Dotenv.load();
+	
 	/* Create panels for holding the fields. To make it look nice,
 	   create an extra panel for holding all the child panels. */
 	Panel serverPanel = new Panel(new BorderLayout());
@@ -45,6 +50,11 @@ public class MailClient extends Frame {
 	serverPanel.add(serverField, BorderLayout.CENTER);
 	fromPanel.add(fromLabel, BorderLayout.WEST);
 	fromPanel.add(fromField, BorderLayout.CENTER);
+	String gmailAddress = dotenv.get("GMAIL");
+	if (gmailAddress != null && !gmailAddress.isEmpty()) {
+		fromField.setText(gmailAddress);
+		fromField.setEditable(false);
+	}
 	toPanel.add(toLabel, BorderLayout.WEST);
 	toPanel.add(toField, BorderLayout.CENTER);
 	subjectPanel.add(subjectLabel, BorderLayout.WEST);

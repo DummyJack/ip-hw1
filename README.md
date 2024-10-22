@@ -42,7 +42,6 @@ java -jar Demo.jar
 
 ```
 Local mailserver: smtp.gmail.com
-From: xxx@gmail.com
 To: xxx@gmail.com
 Subject: 測試郵件
 Ｍessage: 這是一封使用 Google SMTP 傳給您的測試郵件
