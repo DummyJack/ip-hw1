@@ -25,12 +25,14 @@ kotlin-stdlib-1.4.0.jar
 ### Windows
 
 ```
+// no need env file
 執行 Demo.exe
 ```
 
 ### Mac
 
 ```bash
+// need env file
 java -jar Demo.jar
 ```
 
