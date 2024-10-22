@@ -51,6 +51,7 @@ Subject: 測試郵件
 ![smtp code](./img/smtp%20code.png)
 
 235: 用戶驗證成功
+
 334: 等待用戶輸入驗證訊息
 
 ### SMTP 格式
