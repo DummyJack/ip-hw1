@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.JOptionPane;
 
 /* $Id: MailClient.java,v 1.7 1999/07/22 12:07:30 kangasha Exp $ */
 
@@ -86,17 +87,17 @@ public class MailClient extends Frame {
 	    
 	    /* Check that we have the local mailserver */
 	    if ((serverField.getText()).equals("")) {
-		System.out.println("Need name of local mailserver!");
+		showResultDialog(false, "Need name of local mailserver!");
 		return;
 	    }
 
 	    /* Check that we have the sender and recipient. */
 	    if((fromField.getText()).equals("")) {
-		System.out.println("Need sender!");
+		showResultDialog(false, "Need sender!");
 		return;
 	    }
 	    if((toField.getText()).equals("")) {
-		System.out.println("Need recipient!");
+		showResultDialog(false, "Need recipient!");
 		return;
 	    }
 
@@ -109,28 +110,28 @@ public class MailClient extends Frame {
 	    /* Check that the message is valid, i.e., sender and
 	       recipient addresses look ok. */
 	    if(!mailMessage.isValid()) {
+		showResultDialog(false, "Invalid sender or recipient address!");
 		return;
 	    }
 
 	    /* Create the envelope, open the connection and try to send
 	       the message. */
-	    Envelope envelope; // local variable(modify)
+	    Envelope envelope;
 		try {
 			envelope = new Envelope(mailMessage, serverField.getText());
-	    } catch (UnknownHostException e) {
-		/* If there is an error, do not go further */
+		} catch (UnknownHostException e) {
+			showResultDialog(false, "Unknown host: " + e.getMessage());
 			return;
-	    }
+		}
 
-	    try {
+		try {
 			SMTPConnection connection = new SMTPConnection();
 			connection.send(envelope);
 			connection.close();
-	    } catch (IOException error) {
-			System.out.println("Sending failed: " + error);
-			return;
-	    }
-	    	System.out.println("Mail sent succesfully!");
+			showResultDialog(true, "Mail sent successfully!");
+		} catch (IOException error) {
+			showResultDialog(false, "Sending failed: " + error.getMessage());
+		}
 	}
     }
 
@@ -147,8 +148,14 @@ public class MailClient extends Frame {
 
     /* Quit. */
     class QuitListener implements ActionListener {
-	public void actionPerformed(ActionEvent e) {
-	    System.exit(0);
-	}
+		public void actionPerformed(ActionEvent e) {
+			System.exit(0);
+		}
+    }
+
+    private void showResultDialog(boolean success, String message) {
+        String title = success ? "Success" : "Error";
+        int messageType = success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE;
+        JOptionPane.showMessageDialog(this, message, title, messageType);
     }
 }
