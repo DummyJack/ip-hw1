@@ -8,7 +8,7 @@ import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 
 /*
- * 實現一個 SMTP 連接，用於發送單封郵件。
+ * 實現一個 SMTP 連接，用於發送郵件。
  * 使用 SSL 連接以確保安全性。
  */
 public class SMTPConnection implements AutoCloseable {

@@ -25,7 +25,7 @@ public class MailClient extends JFrame {
     private JPasswordField passwordField = new JPasswordField("", 20);
     private JLabel fromLabel = new JLabel("From:");
     private JTextField fromField = new JTextField("", 40);
-    private JLabel toLabel = new JLabel("To:"); 
+    private JLabel toLabel = new JLabel("To: (,: 分隔)");
     private JTextField toField = new JTextField("", 40);
     private JLabel subjectLabel = new JLabel("Subject:");
     private JTextField subjectField = new JTextField("", 40);
@@ -123,41 +123,56 @@ public class MailClient extends JFrame {
                 return;
             }
 
-            /* Create the message */
-            Message mailMessage = new Message(fromField.getText(), 
-                                    toField.getText(), 
-                                    subjectField.getText(), 
-                                    messageText.getText());
-
-            /* Check that the message is valid, i.e., sender and
-            recipient addresses look ok. */
-            if(!mailMessage.isValid()) {
-                showResultDialog(false, "Invalid sender or recipient address!");
+            // 檢查收件人數量
+            String[] recipients = toField.getText().split(",");
+            if (recipients.length > 2) {
+                showResultDialog(false, "警告：您輸入了超過兩位收件人。請減少收件人數量。");
                 return;
             }
 
-            /* Create the envelope, open the connection and try to send
-            the message. */
-            Envelope envelope;
-            try {
-                envelope = new Envelope(mailMessage, serverField.getText());
-            } catch (UnknownHostException e) {
-                showResultDialog(false, "Unknown host: " + e.getMessage());
+            // 檢查寄件人地址的有效性
+            Message senderMessage = new Message(fromField.getText(), "test@test.com", "", "");
+            if (!senderMessage.isValid()) {
+                showResultDialog(false, "無效的寄件人地址：" + fromField.getText());
                 return;
             }
 
-            try {
-                SMTPConnection connection = new SMTPConnection(
-                    serverField.getText(),
-                    usernameField.getText(),
-                    new String(passwordField.getPassword())
-                );
-                connection.send(envelope);
-                connection.close();
-                showResultDialog(true, "Mail sent successfully!");
-            } catch (IOException error) {
-                showResultDialog(false, "Sending failed: " + error.getMessage());
+            // 檢查每個收件人地址的有效性
+            for (String recipient : recipients) {
+                Message recipientMessage = new Message("test@test.com", recipient.trim(), "", "");
+                if (!recipientMessage.isValid()) {
+                    showResultDialog(false, "無效的收件人地址：" + recipient.trim());
+                    return;
+                }
             }
+
+            // 繼續處理郵件發送
+            for (String recipient : recipients) {
+                Message mailMessage = new Message(fromField.getText(), 
+                                        recipient.trim(), 
+                                        subjectField.getText(), 
+                                        messageText.getText());
+
+                // 創建信封並發送郵件
+                try {
+                    Envelope envelope = new Envelope(mailMessage, serverField.getText());
+                    SMTPConnection connection = new SMTPConnection(
+                        serverField.getText(),
+                        usernameField.getText(),
+                        new String(passwordField.getPassword())
+                    );
+                    connection.send(envelope);
+                    connection.close();
+                } catch (UnknownHostException e) {
+                    showResultDialog(false, "Unknown host: " + e.getMessage());
+                    return;
+                } catch (IOException error) {
+                    showResultDialog(false, "Sending failed: " + error.getMessage());
+                    return;
+                }
+            }
+
+            showResultDialog(true, "Mail sent successfully!");
         }
     }
 
