@@ -32,11 +32,15 @@ Subject: 測試郵件
 Message: 這是一封使用 Google SMTP 傳給您的測試郵件
 ```
 
+## 介面
+
+![smtp code](./img/Interface.png)
+
 ## 補充
 
 ### SMTP 回應碼
 
-![smtp code](./img/smtp%20code.png)
+![smtp code](./img/smtp_code.png)
 
 235: 用戶驗證成功
 
