@@ -2,8 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.JOptionPane;
-import io.github.cdimascio.dotenv.Dotenv;
+import javax.swing.*;
 
 /* $Id: MailClient.java,v 1.7 1999/07/22 12:07:30 kangasha Exp $ */
 
@@ -12,155 +11,174 @@ import io.github.cdimascio.dotenv.Dotenv;
  *
  * @author Jussi Kangasharju
  */
-public class MailClient extends Frame {
-    private Dotenv dotenv;
+public class MailClient extends JFrame {
+
     /* The stuff for the GUI. */
-    private Button btSend = new Button("Send");
-    private Button btClear = new Button("Clear");
-    private Button btQuit = new Button("Quit");
-    private Label serverLabel = new Label("SMTP Server:");
-    private TextField serverField = new TextField("", 40);
-    private Label fromLabel = new Label("From:");
-    private TextField fromField = new TextField("", 40);
-    private Label toLabel = new Label("To:"); 
-    private TextField toField = new TextField("", 40);
-    private Label subjectLabel = new Label("Subject:");
-    private TextField subjectField = new TextField("", 40);
-    private Label messageLabel = new Label("Message:");
-    private TextArea messageText = new TextArea(10, 40);
+    private JButton btSend = new JButton("Send");
+    private JButton btClear = new JButton("Clear");
+    private JButton btQuit = new JButton("Quit");
+    private JLabel serverLabel = new JLabel("SMTP Server:");
+    private JTextField serverField = new JTextField("", 40);
+    private JLabel usernameLabel = new JLabel("Username:");
+    private JTextField usernameField = new JTextField("", 20);
+    private JLabel passwordLabel = new JLabel("Password:");
+    private JPasswordField passwordField = new JPasswordField("", 20);
+    private JLabel fromLabel = new JLabel("From:");
+    private JTextField fromField = new JTextField("", 40);
+    private JLabel toLabel = new JLabel("To:"); 
+    private JTextField toField = new JTextField("", 40);
+    private JLabel subjectLabel = new JLabel("Subject:");
+    private JTextField subjectField = new JTextField("", 40);
+    private JLabel messageLabel = new JLabel("Message:");
+    private JTextArea messageText = new JTextArea(10, 40);
 
     /**
      * Create a new MailClient window with fields for entering all
      * the relevant information (From, To, Subject, and message).
      */
     public MailClient() {
-		super("Java Mailclient");
-		
-		/* Load environment variables */
-		dotenv = Dotenv.load();
-		
-		/* Create panels for holding the fields. To make it look nice,
-		create an extra panel for holding all the child panels. */
-		Panel serverPanel = new Panel(new BorderLayout());
-		Panel fromPanel = new Panel(new BorderLayout());
-		Panel toPanel = new Panel(new BorderLayout());
-		Panel subjectPanel = new Panel(new BorderLayout());
-		Panel messagePanel = new Panel(new BorderLayout());
-		serverPanel.add(serverLabel, BorderLayout.WEST);
-		serverPanel.add(serverField, BorderLayout.CENTER);
-		fromPanel.add(fromLabel, BorderLayout.WEST);
-		fromPanel.add(fromField, BorderLayout.CENTER);
-		String gmailAddress = dotenv.get("GMAIL");
-		if (gmailAddress != null && !gmailAddress.isEmpty()) {
-			fromField.setText(gmailAddress);
-			fromField.setEditable(false);
-		}
-		toPanel.add(toLabel, BorderLayout.WEST);
-		toPanel.add(toField, BorderLayout.CENTER);
-		subjectPanel.add(subjectLabel, BorderLayout.WEST);
-		subjectPanel.add(subjectField, BorderLayout.CENTER);
-		messagePanel.add(messageLabel, BorderLayout.NORTH);	
-		messagePanel.add(messageText, BorderLayout.CENTER);
-		Panel fieldPanel = new Panel(new GridLayout(0, 1));
-		fieldPanel.add(serverPanel);
-		fieldPanel.add(fromPanel);
-		fieldPanel.add(toPanel);
-		fieldPanel.add(subjectPanel);
+        super("Java Mailclient");
+        
+        /* Create panels for holding the fields. To make it look nice,
+        create an extra panel for holding all the child panels. */
+        JPanel serverPanel = new JPanel(new BorderLayout(5, 0));
+        JPanel credentialsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        JPanel usernamePanel = new JPanel(new BorderLayout(5, 0));
+        JPanel passwordPanel = new JPanel(new BorderLayout(5, 0));
+        JPanel fromPanel = new JPanel(new BorderLayout(5, 0));
+        JPanel toPanel = new JPanel(new BorderLayout(5, 0));
+        JPanel subjectPanel = new JPanel(new BorderLayout(5, 0));
+        JPanel messagePanel = new JPanel(new BorderLayout(5, 5));
 
-		/* Create a panel for the buttons and add listeners to the
-		buttons. */
-		Panel buttonPanel = new Panel(new GridLayout(1, 0));
-		btSend.addActionListener(new SendListener());
-		btClear.addActionListener(new ClearListener());
-		btQuit.addActionListener(new QuitListener());
-		buttonPanel.add(btSend);
-		buttonPanel.add(btClear);
-		buttonPanel.add(btQuit);
-		
-		/* Add, pack, and show. */
-		add(fieldPanel, BorderLayout.NORTH);
-		add(messagePanel, BorderLayout.CENTER);
-		add(buttonPanel, BorderLayout.SOUTH);
-		pack();
-		// show();
-		setVisible(true);
-		}
+        serverPanel.add(serverLabel, BorderLayout.WEST);
+        serverPanel.add(serverField, BorderLayout.CENTER);
 
-		static public void main(String argv[]) {
-		new MailClient();
-		}
+        usernamePanel.add(usernameLabel, BorderLayout.WEST);
+        usernamePanel.add(usernameField, BorderLayout.CENTER);
+        passwordPanel.add(passwordLabel, BorderLayout.WEST);
+        passwordPanel.add(passwordField, BorderLayout.CENTER);
+        credentialsPanel.add(usernamePanel);
+        credentialsPanel.add(passwordPanel);
 
-		/* Handler for the Send-button. */
-		class SendListener implements ActionListener {
-			public void actionPerformed(ActionEvent event) {
-				System.out.println("Sending mail");
-				
-				/* Check that we have the local mailserver */
-				if ((serverField.getText()).equals("")) {
-					showResultDialog(false, "Need name of local mailserver!");
-					return;
-				}
+        fromPanel.add(fromLabel, BorderLayout.WEST);
+        fromPanel.add(fromField, BorderLayout.CENTER);
+        toPanel.add(toLabel, BorderLayout.WEST);
+        toPanel.add(toField, BorderLayout.CENTER);
+        subjectPanel.add(subjectLabel, BorderLayout.WEST);
+        subjectPanel.add(subjectField, BorderLayout.CENTER);
+        messagePanel.add(messageLabel, BorderLayout.NORTH);    
+        messagePanel.add(new JScrollPane(messageText), BorderLayout.CENTER);
 
-				/* Check that we have the sender and recipient. */
-				if((fromField.getText()).equals("")) {
-					showResultDialog(false, "Need sender!");
-					return;
-				}
-				if((toField.getText()).equals("")) {
-					showResultDialog(false, "Need recipient!");
-					return;
-				}
+        JPanel fieldPanel = new JPanel(new GridLayout(0, 1, 0, 10));
+        fieldPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        fieldPanel.add(serverPanel);
+        fieldPanel.add(credentialsPanel);
+        fieldPanel.add(fromPanel);
+        fieldPanel.add(toPanel);
+        fieldPanel.add(subjectPanel);
 
-				/* Create the message */
-				Message mailMessage = new Message(fromField.getText(), 
-								toField.getText(), 
-								subjectField.getText(), 
-								messageText.getText());
+        /* Create a panel for the buttons and add listeners to the buttons. */
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 0, 10, 0));
+        btSend.addActionListener(new SendListener());
+        btClear.addActionListener(new ClearListener());
+        btQuit.addActionListener(new QuitListener());
+        buttonPanel.add(btSend);
+        buttonPanel.add(btClear);
+        buttonPanel.add(btQuit);
+        
+        /* Add, pack, and show. */
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 20));  // 添加垂直間距
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));  // 添加邊距
+        mainPanel.add(fieldPanel, BorderLayout.NORTH);
+        mainPanel.add(messagePanel, BorderLayout.CENTER);
+        
+        add(mainPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+        pack();
+        setVisible(true);
+    }
 
-				/* Check that the message is valid, i.e., sender and
-				recipient addresses look ok. */
-				if(!mailMessage.isValid()) {
-					showResultDialog(false, "Invalid sender or recipient address!");
-					return;
-				}
+    static public void main(String argv[]) {
+        new MailClient();
+    }
 
-				/* Create the envelope, open the connection and try to send
-				the message. */
-				Envelope envelope;
-				try {
-					envelope = new Envelope(mailMessage, serverField.getText());
-				} catch (UnknownHostException e) {
-					showResultDialog(false, "Unknown host: " + e.getMessage());
-					return;
-				}
+    /* Handler for the Send-button. */
+    class SendListener implements ActionListener {
+        public void actionPerformed(ActionEvent event) {
+            System.out.println("Sending mail");
+            
+            /* Check that we have the local mailserver */
+            if ((serverField.getText()).equals("")) {
+                showResultDialog(false, "Need name of local mailserver!");
+                return;
+            }
 
-				try {
-					SMTPConnection connection = new SMTPConnection(serverField.getText());
-					connection.send(envelope);
-					connection.close();
-					showResultDialog(true, "Mail sent successfully!");
-				} catch (IOException error) {
-					showResultDialog(false, "Sending failed: " + error.getMessage());
-				}
-			}
-    	}
+            /* Check that we have the sender and recipient. */
+            if((fromField.getText()).equals("")) {
+                showResultDialog(false, "Need sender!");
+                return;
+            }
+            if((toField.getText()).equals("")) {
+                showResultDialog(false, "Need recipient!");
+                return;
+            }
+
+            /* Create the message */
+            Message mailMessage = new Message(fromField.getText(), 
+                                    toField.getText(), 
+                                    subjectField.getText(), 
+                                    messageText.getText());
+
+            /* Check that the message is valid, i.e., sender and
+            recipient addresses look ok. */
+            if(!mailMessage.isValid()) {
+                showResultDialog(false, "Invalid sender or recipient address!");
+                return;
+            }
+
+            /* Create the envelope, open the connection and try to send
+            the message. */
+            Envelope envelope;
+            try {
+                envelope = new Envelope(mailMessage, serverField.getText());
+            } catch (UnknownHostException e) {
+                showResultDialog(false, "Unknown host: " + e.getMessage());
+                return;
+            }
+
+            try {
+                SMTPConnection connection = new SMTPConnection(
+                    serverField.getText(),
+                    usernameField.getText(),
+                    new String(passwordField.getPassword())
+                );
+                connection.send(envelope);
+                connection.close();
+                showResultDialog(true, "Mail sent successfully!");
+            } catch (IOException error) {
+                showResultDialog(false, "Sending failed: " + error.getMessage());
+            }
+        }
+    }
 
     /* Clear the fields on the GUI. */
     class ClearListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			System.out.println("Clearing fields");
-			fromField.setText("");
-			toField.setText("");
-			subjectField.setText("");
-			messageText.setText("");
-		}
+        public void actionPerformed(ActionEvent e) {
+            System.out.println("Clearing fields");
+			usernameField.setText("");
+			passwordField.setText("");
+            fromField.setText("");
+            toField.setText("");
+            subjectField.setText("");
+            messageText.setText("");
+        }
     }
 
     /* Quit. */
     class QuitListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			System.exit(0);
-		}
+        public void actionPerformed(ActionEvent e) {
+            System.exit(0);
+        }
     }
 
     private void showResultDialog(boolean success, String message) {

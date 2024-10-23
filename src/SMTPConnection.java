@@ -6,7 +6,6 @@ import java.io.*;
 import javax.net.ssl.*;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
-import io.github.cdimascio.dotenv.Dotenv;
 
 /*
  * 實現一個 SMTP 連接，用於發送單封郵件。
@@ -17,8 +16,6 @@ public class SMTPConnection implements AutoCloseable {
     // 伺服器連接相關的變數
     private static final int SMTP_PORT = 465; // SSL端口
     private static final String CRLF = "\r\n";
-    private static final String Gmail = getEnvVariable("GMAIL");
-    private static final String Password = getEnvVariable("PASSWORD");
 
     private final SSLSocket connection;
     // Streams for reading and writing the socket
@@ -28,15 +25,10 @@ public class SMTPConnection implements AutoCloseable {
     // Are we connected? Used in close() to determine what to do.
     private boolean isConnected = false;
 
-    // 從 .env 文件中獲取環境變量的值
-    private static String getEnvVariable(String key) {
-        return Dotenv.load().get(key);
-    }
-
     /*
-     * 創建 SMTPConnection 對象，建立 SSL 連接並初始化用於與服務器通信的輸入輸出流
+     * 創建 SMTPConnection 對象，建立 SSL 連接並初始化用於與服務器通信的輸入輸出流，進行身份驗證
      */
-    public SMTPConnection(String SMTP_HOST ) throws IOException {
+    public SMTPConnection(String SMTP_HOST, String username, String password) throws IOException {
         System.out.println("連接 " + SMTP_HOST  + ":" + SMTP_PORT);
         SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         connection = (SSLSocket) sslSocketFactory.createSocket(SMTP_HOST, SMTP_PORT);
@@ -44,31 +36,21 @@ public class SMTPConnection implements AutoCloseable {
         fromServer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         toServer = new DataOutputStream(connection.getOutputStream());
 
-        initializeConnection();
-    }
-
-    /*
-     * 初始化 SMTP 連接，包括驗證伺服器響應、發送 EHLO 命令和進行身份驗證
-     */
-    private void initializeConnection() throws IOException {
+        // SMTP 連接，包括驗證伺服器響應、發送 EHLO 命令
         verifyServerResponse(readResponse(), 220);
         sendCommand("EHLO " + InetAddress.getLocalHost().getHostName(), 250);
-        authenticate();
-        isConnected = true;
-        System.out.println("連接成功並完成驗證");
-    }
 
-    /*
-     * 進行 SMTP 身份驗證
-     */
-    private void authenticate() throws IOException {
+        // 進行 SMTP 身份驗證
         try {
             sendCommand("AUTH LOGIN", 334);
-            sendCommand(Base64.getEncoder().encodeToString(Gmail.getBytes()), 334);
-            sendCommand(Base64.getEncoder().encodeToString(Password.getBytes()), 235);
+            sendCommand(Base64.getEncoder().encodeToString(username.getBytes()), 334);
+            sendCommand(Base64.getEncoder().encodeToString(password.getBytes()), 235);
         } catch (IOException e) {
             throw new IOException("身份驗證失敗", e);
         }
+
+        isConnected = true;
+        System.out.println("連接成功並完成驗證");
     }
 
     /*
@@ -79,19 +61,12 @@ public class SMTPConnection implements AutoCloseable {
         sendCommand("RCPT TO:<" + envelope.Recipient + ">", 250);
         sendCommand("DATA", 354);
         
-        sendMessageContent(envelope);
-        
-        verifyServerResponse(readResponse(), 250);
-    }
-
-    /*
-     * 發送郵件內容，使用UTF-8編碼
-     */
-    private void sendMessageContent(Envelope envelope) throws IOException {
+        // 發送內容，使用 UTF-8 編碼
         byte[] content = (envelope.Message.Headers + CRLF + envelope.Message.Body + CRLF + "." + CRLF)
                          .getBytes(StandardCharsets.UTF_8);
         toServer.write(content);
         toServer.flush();
+        verifyServerResponse(readResponse(), 250);
     }
 
     /*
