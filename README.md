@@ -4,7 +4,7 @@
 
 ## 設置
 
-_Requires Java 11 or greater_
+_Requires Java 11 or greater._
 
 ### package
 
@@ -42,9 +42,12 @@ java -jar Demo.jar
 
 ```
 SMTP Server: smtp.gmail.com
+Username: your@gmail.com
+Password: your email app password # https://myaccount.google.com/apppasswords
+From: xxx@gmail.com
 To: xxx@gmail.com
 Subject: 測試郵件
-Ｍessage: 這是一封使用 Google SMTP 傳給您的測試郵件
+Message: 這是一封使用 Google SMTP 傳給您的測試郵件
 ```
 
 ## 補充
