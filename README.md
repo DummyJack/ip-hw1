@@ -6,35 +6,17 @@
 
 _Requires Java 11 or greater._
 
-### package
-
-```
-// use vscode
-// In Java Project Referenced Libraries, add below packages(in packages folder)
-java-dotenv-5.2.2.jar
-kotlin-stdlib-1.4.0.jar
-```
-
-### env
-
-```
-// create .env file in project
-參考 .env.example
-```
-
 ## 啟動
 
 ### Windows
 
 ```
-// no need env file
 執行 Demo.exe
 ```
 
 ### Mac
 
 ```bash
-// need env file
 java -jar Demo.jar
 ```
 
